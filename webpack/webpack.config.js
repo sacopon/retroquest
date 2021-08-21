@@ -6,18 +6,14 @@ const sourceDir = path.join(__dirname, "../src");
 const publicDir = path.join(__dirname, "../dist");
 const assetDir = path.join(__dirname, "../assets/dist");
 
-// プラグイン設定
-const htmlWebpackPluginOptions = {
-  template: path.join(sourceDir, "index.html.ejs"),
-  inject: "body",
-  hash: true,
-};
-
 module.exports = {
-  entry: "./src/main.ts",
+  entry: {
+    index: "./src/index.ts",
+    app: "./src/app.ts",
+  },
   output: {
     path: publicDir,
-    filename: "app.bundle.js",
+    filename: "[name].bundle.js",
   },
   module: {
     rules: [
@@ -38,7 +34,22 @@ module.exports = {
       chunks: "initial",
     },
   },
-  plugins: [new HtmlWebpackPlugin(htmlWebpackPluginOptions)],
+  plugins: [
+    new HtmlWebpackPlugin({
+      chunks: ["index"],
+      template: path.join(sourceDir, "index.html.ejs"),
+      inject: "body",
+      hash: true,
+      filename: "index.html",
+    }),
+    new HtmlWebpackPlugin({
+      chunks: ["app"],
+      template: path.join(sourceDir, "app.html.ejs"),
+      inject: "body",
+      hash: true,
+      filename: "app.html",
+    }),
+  ],
   devtool: "inline-source-map",
   devServer: {
     host: "0.0.0.0",
