@@ -1,28 +1,18 @@
-import { Application, Graphics, Sprite } from "pixi.js";
-import { screen } from "presentation/application/config/configuration";
+import { Application, Graphics } from "pixi.js";
 import { disableTouchEvent, disableOuterCanvasTouchEvent } from "presentation/helper/disable_touch_event";
 import { getWindowSizeAsync } from "presentation/helper/get_window_size_async";
 
-async function mainProgram() {
-  const clientSize = await getWindowSizeAsync();
+let app: PIXI.Application;
 
-  const app = new Application({
-    width: screen.resolution.width,
-    height: screen.resolution.height,
+function setUpCanvas(size: { width: number; height: number }) {
+  app = new Application({
+    width: size.width,
+    height: size.height,
     transparent: false,
   });
 
-  const widthRatio = clientSize.width / screen.resolution.width;
-  const heightRatio = clientSize.height / screen.resolution.height;
-  let canvasWidth = 0;
-  let canvasHeight = 0;
-
-  const ratio = Math.min(widthRatio, heightRatio);
-  canvasWidth = Math.floor(screen.resolution.width * ratio);
-  canvasHeight = Math.floor(screen.resolution.height * ratio);
-
-  app.view.style.width = `${canvasWidth}px`;
-  app.view.style.height = `${canvasHeight}px`;
+  app.view.style.width = `${size.width}px`;
+  app.view.style.height = `${size.height}px`;
   app.view.style.position = "abosolute";
   app.view.style.left = app.view.style.top = app.view.style.right = app.view.style.bottom = "0px";
   app.view.style.margin = "auto";
@@ -31,19 +21,33 @@ async function mainProgram() {
   disableOuterCanvasTouchEvent();
   disableTouchEvent(app.view);
   document.body.appendChild(app.view);
+}
 
-  // NOTE: use sprite sample.
-  // const url = `${window.location.origin}/assets/character.json`;
-  // app.loader.add(url);
-  // app.loader.load(() => {
-  //   const sprite = Sprite.from("stay.png");
-  //   sprite.x = screen.resolution.width - sprite.width;
-  //   app.stage.addChild(sprite);
-  // });
+function setUpInlineFrame(size: { width: number, height: number }) {
+  const iframe: HTMLIFrameElement = window.document.createElement("iframe");
+  iframe.id = "myiframe";
+  iframe.src = "./app.html";
+  iframe.width = "256px";
+  iframe.height = "224px";
+  iframe.style.border = "0";
+  iframe.style.position = "absolute";
+  iframe.style.transformOrigin = "0 0";
+  iframe.style.marginTop = `${Math.floor(size.height / 20)}px`;
+  iframe.style.padding = "0";
+  iframe.style.transform = `scale(${size.width / 256})`;
+  disableTouchEvent(iframe);
+  document.body.appendChild(iframe);
+}
+
+async function mainProgram() {
+  const clientSize = await getWindowSizeAsync();
+
+  setUpCanvas(clientSize);
+  setUpInlineFrame(clientSize);
 
   const g = new Graphics();
   g.beginFill(0xff00ff);
-  g.drawRect(0, 0, screen.resolution.width, screen.resolution.height);
+  g.drawRect(0, 0, clientSize.width, clientSize.height);
   g.endFill();
   app.stage.addChild(g);
 }
